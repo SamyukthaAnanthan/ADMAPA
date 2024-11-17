@@ -1,0 +1,669 @@
+---
+title: "ADM"
+output: html_document
+date: "2024-11-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)  
+
+library(class)  
+
+library(ISLR)  
+
+library(dplyr)  
+
+library(ggplot2)  
+
+library(caret)  
+
+library(pROC)  
+
+library(gmodels)  
+
+library(modeest)  
+
+library(ggcorrplot)  
+
+library(car)  
+
+library(DataExplorer)  
+
+library(skimr)  
+
+library(glmnet)  
+
+```
+
+
+
+```{r}  
+
+  
+
+training <- read.csv("C:/Users/samyu/Downloads/train_v3.csv")  
+
+  
+
+```  
+
+  
+
+```{r}  
+
+  
+
+dim(training)  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+x<-table(is.na(training))  
+
+  
+
+x  
+
+  
+
+```  
+
+  
+
+```{r}  
+
+  
+
+missing_training<- training[!complete.cases(training), ]  
+
+  
+
+dim(missing_training)  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+training<- training[complete.cases(training), ]  
+
+  
+
+dim(training)  
+
+  
+
+dim(missing_training)  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+table(is.na(training))  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+   
+
+  
+
+Importing validation dataset  
+
+  
+
+```{r}  
+
+  
+
+valid<- read.csv("C:/Users/samyu/Downloads/test_v3.csv")  
+
+  
+
+head(valid)  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+table(is.na(valid))  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+valid<- valid[complete.cases(valid), ]  
+
+  
+
+dim(valid)  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+table(is.na(valid))  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+feature selection  
+
+  
+
+####1. correlation plot   
+
+  
+
+   
+
+  
+
+   
+
+  
+
+   
+
+  
+
+lasso  
+
+  
+
+```{r}  
+
+  
+
+training_noloss<- training[ ,!names(training)=="loss"]  
+
+  
+
+   
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+dim(training_noloss)  
+
+  
+
+```  
+
+  
+
+lasso  
+
+  
+
+```{r}  
+
+  
+
+fit= glmnet(training_noloss, training$loss)  
+
+  
+
+plot(fit)  
+
+  
+
+```  
+
+  
+
+lasso for lamda=0   
+
+  
+
+```{r}  
+
+  
+
+# Assuming 'training' is your dataframe, and 'loss' is the dependent variable  
+
+  
+
+index <- training$loss  
+
+  
+
+   
+
+  
+
+# Fit the linear model (use . to include all other columns as predictors)  
+
+  
+
+lm_fit <- lm(index ~ ., data = training)  
+
+  
+
+   
+
+  
+
+# Extract coefficients as a dataframe  
+
+  
+
+coefficients_l0 <- data.frame(  
+
+  
+
+  Features = names(lm_fit$coefficients),  
+
+  
+
+  Coefficients = lm_fit$coefficients  
+
+  
+
+)   
+
+  
+
+   
+
+  
+
+# Print the dataframe  
+
+  
+
+print(coefficients_l0)  
+
+  
+
+```  
+
+  
+
+   
+
+  
+
+```{r}  
+
+  
+
+dim(coefficients_l0)  
+
+  
+
+```  
+
+  
+
+   
+
+removed features from 763 to 641 for lamda zero  
+
+  
+
+```{r}  
+
+  
+
+coefficients_l0<- na.omit(coefficients_l0)  
+
+  
+
+print(coefficients_l0)  
+
+  
+
+```  
+
+
+```{r} 
+
+library(Amelia)   
+
+missmap(missing_training, main = "Missing Values Map")  
+
+``` 
+
+   
+
+  
+
+  
+
+cross validation for lasso  
+
+  
+
+```{r}  
+
+training_noloss<- as.matrix(training_noloss) 
+
+training<- as.matrix(training) 
+
+cvfit = cv.glmnet(training_noloss, index)  
+
+  
+
+```  
+
+  
+
+```{r} 
+
+cvfit$lambda.min 
+
+cvfit$lambda.1se 
+
+``` 
+
+  
+
+Hence optimal lambda value for feature selection using lasso is 0.02631568 
+
+  
+
+```{r} 
+
+y<- coef(cvfit, s="lambda.min") 
+
+y 
+
+``` 
+
+  
+
+  
+
+```{r} 
+
+  
+
+# Convert the dgCMatrix `y` to a dense matrix 
+
+dense_matrix <- as.matrix(y) 
+
+  
+
+# Convert dense matrix to a data frame 
+
+df <- as.data.frame(dense_matrix) 
+
+  
+
+# Optionally, rename columns if required 
+
+colnames(df) <- paste0("Lambda_values", seq_len(ncol(df))) 
+
+  
+
+# Print the resulting data frame 
+
+print(df) 
+
+  
+
+  
+
+``` 
+
+  
+
+  
+
+```{r} 
+
+# Remove rows where all values are zero 
+
+df_non_zero <- data.frame(Feature = rownames(df), Lambda_values1 = df$Lambda_values1)[df$Lambda_values1 != 0, ] 
+
+  
+
+``` 
+
+  
+
+feature selection: from 763 to 34 when optimal lambda of 0.02888142 is chosen using lasso 
+
+```{r} 
+
+head(df_non_zero) 
+
+dim(df_non_zero) 
+
+``` 
+
+  
+
+  
+
+```{r} 
+
+training<- as.data.frame(training) 
+
+training_noloss<- as.data.frame(training_noloss) 
+
+library(rpart) 
+
+library(rpart.plot) 
+
+model_dt <- rpart(loss ~ ., data = training, method = "anova", cp = 0.001, minsplit = 20, maxdepth = 10) 
+
+summary(model_dt) 
+
+rpart.plot(model_dt) 
+
+``` 
+
+```{r} 
+
+# Load necessary libraries 
+
+library(MASS) 
+
+  
+
+# Fit an initial model (including all predictors) 
+
+initial_model <- lm(loss ~ ., data = training) 
+
+  
+
+# Perform stepwise regression (both forward and backward selection) 
+
+stepwise_model <- step(initial_model, direction = "forward", trace = 1) 
+
+  
+
+# Show the final selected model 
+
+summary(stepwise_model) 
+
+  
+
+# Check the selected features 
+
+cat("Selected features in the model: \n") 
+
+print(coef(stepwise_model)) 
+
+  
+
+``` 
+
+  
+
+  
+
+######PLS 
+
+```{r} 
+
+library(pls) 
+
+  
+
+# Fit the PLS model (without cross-validation) 
+
+pls_model <- plsr(loss ~ ., data = training, ncomp = 5)  # You can adjust the number of components (ncomp) 
+
+  
+
+# Summary of the model 
+
+summary(pls_model) 
+
+  
+
+# Access the loading scores for the components 
+
+loading_scores <- pls_model$loadings 
+
+  
+
+# Print the loading scores 
+
+cat("Loading Scores for Each Feature: \n") 
+
+print(loading_scores) 
+
+  
+
+# For each component, check the absolute loading scores for features 
+
+# Let's assume you want to extract features with high absolute loadings from the first component 
+
+important_features_component_1 <- names(loading_scores[, 1][abs(loading_scores[, 1]) > 0.1])  # Adjust the threshold as needed 
+
+  
+
+cat("Important Features from Component 1: \n") 
+
+print(important_features_component_1) 
+
+  
+
+# Optionally, repeat the process for other components 
+
+important_features_component_2 <- names(loading_scores[, 2][abs(loading_scores[, 2]) > 0.1])  # Adjust threshold as needed 
+
+cat("Important Features from Component 2: \n") 
+
+print(important_features_component_2) 
+
+  
+
+# You can also extract features from all components and combine them 
+
+# List all important features across components (if they meet your threshold) 
+
+important_features_all <- unique(c(important_features_component_1, important_features_component_2))  # Add more components if needed 
+
+cat("All Important Features: \n") 
+
+print(important_features_all) 
+
+  
+
+``` 
+
+ 
+
+ 
