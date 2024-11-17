@@ -1,0 +1,48 @@
+---
+title: "Assignment 1"
+output: pdf_document
+date: "2023-09-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+data("Titanic")
+head(Titanic)
+titanic_df <- as.data.frame(Titanic)
+# Summary for the 'Sex' variable (categorical)
+table(titanic_df$Sex)
+# Summary for the 'Age' variable (quantitative)
+summary(titanic_df$Age)
+class(titanic_df$Age)
+titanic_df$Age = as.numeric(as.character(titanic_df$Age))
+class(titanic_df$Age)
+any(is.na(titanic_df$Age))
+# 2. Transform at least one variable.
+# In this case, we can calculate the mean of the 'Age' variable.
+mean_age <- mean(titanic_df$Age, na.rm = TRUE)
+titanic_df$Age[is.na(titanic_df$Age)] <- mean_age
+mean_age <- mean(titanic_df$Age)
+cat("Mean Age:", mean_age, "\n")
+

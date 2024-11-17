@@ -1,0 +1,7 @@
+bikedata=read.csv(file.choose())
+bikedatadf=bikedata[,c(10,12,13,14,16)]
+reg=lm(cnt~.,data = bikedatadf)
+summary(reg)
+round(reg$coefficients,2)
+par(mfrow=c(2,2))
+plot(reg)

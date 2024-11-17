@@ -1,0 +1,109 @@
+---
+title: "Assignment 2 Part B"
+output: pdf_document
+date: "2024-11-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ISLR)
+library(dplyr)
+library(glmnet)
+library(caret)
+```
+
+```{r}
+Carseats_Filtered <- Carseats %>% select("Sales", "Price",
+"Advertising","Population","Age","Income","Education")
+```
+
+#QB1. Build a decision tree regression model to predict Sales based on all other attributes ("Price", "Advertising", "Population", "Age", "Income" and "Education"). Which attribute is used at the top of the tree (the root node) for splitting? Hint: you can either plot () and text() functions or use the summary() function to see the decision tree rules.
+
+```{r}
+# First, let's make sure we have the rpart package
+if (!require(rpart)) install.packages("rpart")
+library(rpart)
+
+# Build the decision tree model
+tree_model <- rpart(Sales ~ ., data = Carseats_Filtered)
+
+# Print the summary of the model
+summary(tree_model)
+
+# Plot the tree
+plot(tree_model)
+text(tree_model, pretty = 0)
+```
+#QB2. Consider the following input:
+#• Sales=9
+#• Price=6.54
+#• Population=124
+#• Advertising=0
+#• Age=76
+#• Income= 110
+#• Education=10
+#What will be the estimated Sales for this record using the decision tree model? (15% of total points)
+
+```{r}
+# Create a new data frame with the given input
+new_data <- data.frame(
+  Price = 6.54,
+  Population = 124,
+  Advertising = 0,
+  Age = 76,
+  Income = 110,
+  Education = 10
+)
+
+# Use the tree model to predict Sales for the new data
+predicted_sales <- predict(tree_model, newdata = new_data)
+
+# Print the predicted Sales
+print(predicted_sales)
+```
+
+#QB3. Use the caret function to train a random forest (method=’rf’) for the same dataset. Use the caret default settings. By default, caret will examine the “mtry” values of 2,4, and 6. Recall that mtry is the number of attributes available for splitting at each splitting node. Which mtry value gives the best performance? (Make sure to set the random number generator seed to 123)
+
+```{r}
+# Set the random seed for reproducibility
+set.seed(123)
+
+# Train the random forest model using caret
+rf_model <- train(Sales ~ ., 
+                  data = Carseats_Filtered, 
+                  method = "rf",
+                  trControl = trainControl(method = "cv", number = 5))
+
+# Print the results
+print(rf_model)
+```
+
+#QB4. Customize the search grid by checking the model’s performance for mtry values of 2, 3 and 5 using 3 repeats of 5-fold cross validation.
+
+```{r}
+# Set the random seed for reproducibility
+set.seed(123)
+
+# Define the custom search grid
+custom_grid <- expand.grid(mtry = c(2, 3, 5))
+
+# Define the control parameters for training
+ctrl <- trainControl(method = "repeatedcv",
+                     number = 5,
+                     repeats = 3)
+
+# Train the random forest model with the custom grid
+rf_model_custom <- train(Sales ~ ., 
+                         data = Carseats_Filtered, 
+                         method = "rf",
+                         metric = "RMSE",
+                         tuneGrid = custom_grid,
+                         trControl = ctrl)
+
+# Print the results
+print(rf_model_custom)
+```
+

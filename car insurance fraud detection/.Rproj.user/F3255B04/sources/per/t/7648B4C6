@@ -1,0 +1,32 @@
+{
+    "id": "7648B4C6",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1665401393454.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "cacheKey": "75538A1D",
+        "caption": "fraud_oracle",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=fraud_oracle&cache_key=75538A1D",
+        "displayedObservations": 15420,
+        "environment": "",
+        "object": "fraud_oracle",
+        "preview": 0,
+        "totalObservations": 15420,
+        "variables": 33,
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 31244147623002222,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1665401393454,
+    "read_only": false,
+    "read_only_alternatives": []
+}

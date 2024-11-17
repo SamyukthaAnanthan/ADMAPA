@@ -1,0 +1,86 @@
+---
+title: "Individual Assignment 1"
+output: pdf_document
+date: "2024-10-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+QB1. Build a Lasso regression model to predict Sales based on all other attributes ("Price", "Advertising", "Population", "Age", "Income" and "Education").What is the best value of lambda for such a lasso model
+
+```{r}
+#Load necessary libraries
+library(ISLR)
+library(dplyr)
+library(glmnet)
+library(caret)
+```
+
+```{r}
+#Filter the relevant attributes
+Carseats_Filtered <- Carseats %>% select(Sales, Price, Advertising, Population, Age, Income, Education)
+
+#Preprocess the data(scale and center the features)
+preProcess_data <- preProcess(Carseats_Filtered[, -1], method = c("center", "scale"))
+Carseats_Scaled <- predict(preProcess_data, Carseats_Filtered[, -1])
+
+# Convert predictors to matrix
+X <- as.matrix(Carseats_Scaled)
+
+# Response variable (Sales)
+y <- Carseats_Filtered$Sales
+
+# Lasso regression with cross-validation
+lasso_model <- cv.glmnet(X, y, alpha = 1)
+
+# Best lambda value
+best_lambda <- lasso_model$lambda.min
+print(best_lambda)
+```
+
+QB2. What is the coefficient for the price (normalized) attribute in the best model (i.e. model with the optimal lambda)?
+
+```{r}
+# Get the coefficients of the model with the optimal lambda
+lasso_coefficients <- coef(lasso_model, s = best_lambda)
+
+# Convert the coefficients to a readable format
+coefficients_df <- as.data.frame(as.matrix(lasso_coefficients))
+
+# Print the coefficient for Price (normalized)
+price_coefficient <- coefficients_df["Price", ]
+print(price_coefficient)
+```
+QB3. How many attributes remain in the model if lambda is set to 0.01? How that number changes if lambda is increased to 0.1? Do you expect more variables to stay in the model (i.e., thave non-zero coefficients) as we increase lambda?
+
+```{r}
+# Get the coefficients for lambda = 0.01
+lasso_coefficients_0.01 <- coef(lasso_model, s = 0.01)
+
+# Count the number of non-zero coefficients
+non_zero_coeffs_0.01 <- sum(lasso_coefficients_0.01 != 0)
+print(non_zero_coeffs_0.01)
+```
+
+```{r}
+# Get the coefficients for lambda = 0.1
+lasso_coefficients_0.1 <- coef(lasso_model, s = 0.1)
+
+# Count the number of non-zero coefficients
+non_zero_coeffs_0.1 <- sum(lasso_coefficients_0.1 != 0)
+print(non_zero_coeffs_0.1)
+```
+
+QB4. Build an elastic-net model with alpha set to 0.6. What is the best value of lambda for such a model?
+
+```{r}
+# Elastic-Net model with alpha = 0.6 and cross-validation
+elastic_net_model <- cv.glmnet(X, y, alpha = 0.6)
+
+# Best lambda for the Elastic-Net model
+best_lambda_elastic_net <- elastic_net_model$lambda.min
+print(best_lambda_elastic_net)
+```
+

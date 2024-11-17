@@ -1,0 +1,44 @@
+x<-10
+y<-20
+z<- x*y
+z
+a= 1:5
+x1= "hello"
+class(x1)
+x2 = 10
+class(x2)
+x3 = 10.47
+class(x3)
+x4 = 10+2i
+class(x4)
+x5= TRUE
+class(x5)
+x6=c(5,13,79.4)
+x6
+x7=c("a","b","c")
+x7
+x8=c(T,F)
+x8
+x9 = list(x6,x7,x8)
+x9
+class(x9)
+x10=c("a",6,7)
+class(x10)
+m = matrix(1:6, nrow= 2, ncol= 3, byrow = TRUE)
+m
+Restaurant = 1:4
+Bar = c(T,T,F,F)
+Food = data.frame(Restaurant,Bar)
+Food
+Food$Restaurant
+Food$Bar
+```{r}
+data("iris")
+iris
+summary(iris)
+```
+plot(iris)
+#scatter plot
+x= iris$Sepal.Length
+y= iris$Sepal.Width
+plot(x,y)
